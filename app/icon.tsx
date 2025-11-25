@@ -1,10 +1,47 @@
-import { Sparkles } from 'lucide-react'
+import { ImageResponse } from 'next/og'
+
+export const size = {
+  width: 32,
+  height: 32,
+}
+export const contentType = 'image/png'
 
 export default function Icon() {
-  return (
-    <div className="flex items-center justify-center w-full h-full bg-forest">
-      <Sparkles className="w-6 h-6 text-accent" />
-    </div>
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          fontSize: 24,
+          background: '#0F380F',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#C4A000',
+        }}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+          <path d="M5 3v4" />
+          <path d="M19 17v4" />
+          <path d="M3 5h4" />
+          <path d="M17 19h4" />
+        </svg>
+      </div>
+    ),
+    {
+      ...size,
+    }
   )
 }
 
