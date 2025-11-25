@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CraftX — Creative Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Cooper Black';
+            src: url('https://db.onlinewebfonts.com/t/3f3cf99c148c8bd54e96b09b8f1d5f0e.woff2') format('woff2');
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --forest: #0F380F;
+            --forest-light: #1a4a1a;
+            --cream: #F5F5F0;
+            --cream-dim: rgba(245, 245, 240, 0.7);
+            --accent: #C4A000;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--forest);
+            color: var(--cream);
+            font-family: 'Space Mono', monospace;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* Noise Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+            mix-blend-mode: overlay;
+        }
+
+        .noise-overlay::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            animation: grain 0.5s steps(10) infinite;
+        }
+
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-5%, -10%); }
+            20% { transform: translate(-15%, 5%); }
+            30% { transform: translate(7%, -25%); }
+            40% { transform: translate(-5%, 25%); }
+            50% { transform: translate(-15%, 10%); }
+            60% { transform: translate(15%, 0%); }
+            70% { transform: translate(0%, 15%); }
+            80% { transform: translate(3%, 35%); }
+            90% { transform: translate(-10%, 10%); }
+        }
+
+        /* Canvas Background */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #canvas-container canvas {
+            pointer-events: auto;
+        }
+
+        /* Main Content */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 2rem;
+            padding: 2rem 4rem;
+            align-items: center;
+        }
+
+        .hero-left {
+            position: relative;
+        }
+
+        .kinetic-headline {
+            font-family: 'Cooper Black', 'Rockwell Extra Bold', serif;
+            font-size: clamp(3rem, 8vw, 6rem);
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            color: var(--cream);
+            transform-origin: left center;
+            transition: transform 0.1s ease-out;
+        }
+
+        .kinetic-headline span {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .kinetic-headline .word {
+            display: inline-block;
+            margin-right: 0.3em;
+        }
+
+        .hero-subtitle {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.875rem;
+            margin-top: 2rem;
+            color: var(--cream-dim);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hero-right {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        /* Vintage Portrait Collage */
+        .collage-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+        }
+
+        .vintage-portrait {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--forest-light) 0%, var(--forest) 100%);
+            border: 3px solid var(--cream);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vintage-portrait::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(245, 245, 240, 0.03) 2px,
+                    rgba(245, 245, 240, 0.03) 4px
+                );
+        }
+
+        .portrait-inner {
+            position: absolute;
+            inset: 20px;
+            border: 1px solid var(--cream-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .portrait-icon {
+            width: 120px;
+            height: 150px;
+            background: var(--cream);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .portrait-icon svg {
+            width: 60px;
+            height: 60px;
+            fill: var(--forest);
+        }
+
+        .portrait-text {
+            font-family: 'Cooper Black', serif;
+            font-size: 1.5rem;
+            color: var(--cream);
+            text-align: center;
+        }
+
+        /* Windows 95 Error Popup */
+        .error-popup {
+            position: absolute;
+            top: -30px;
+            right: -60px;
+            width: 320px;
+            background: #C0C0C0;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+            font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+            cursor: grab;
+            user-select: none;
+            z-index: 100;
+        }
+
+        .error-popup:active {
+            cursor: grabbing;
+        }
+
+        .error-titlebar {
+            background: linear-gradient(90deg, #000080, #1084D0);
+            color: white;
+            padding: 3px 5px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .error-titlebar-buttons {
+            display: flex;
+            gap: 2px;
+        }
+
+        .titlebar-btn {
+            width: 16px;
+            height: 14px;
+            background: #C0C0C0;
+            border: 1px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .error-content {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .error-icon {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .error-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .error-buttons {
+            padding: 10px 20px 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .win95-btn {
+            background: #C0C0C0;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            padding: 4px 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .win95-btn:active {
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 8rem 4rem;
+            position: relative;
+        }
+
+        .services-header {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            color: var(--cream-dim);
+        }
+
+        .services-list {
+            list-style: none;
+        }
+
+        .service-item {
+            border-top: 1px solid rgba(245, 245, 240, 0.2);
+            padding: 2rem 0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .service-item:last-child {
+            border-bottom: 1px solid rgba(245, 245, 240, 0.2);
+        }
+
+        .service-item:hover {
+            padding-left: 2rem;
+        }
+
+        .service-item:hover .service-number {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .service-number {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) translateX(-20px);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--accent);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .service-name {
+            font-family: 'Cooper Black', serif;
+            font-size: clamp(3rem, 10vw, 8rem);
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            transition: all 0.3s ease;
+        }
+
+        .service-item:hover .service-name {
+            color: var(--accent);
+            text-shadow: 4px 4px 0 rgba(245, 245, 240, 0.1);
+        }
+
+        /* Floating Service Images */
+        .service-image {
+            position: fixed;
+            width: 200px;
+            height: 280px;
+            background: var(--cream);
+            border: 3px solid var(--cream);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 50;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .service-image.active {
+            opacity: 1;
+        }
+
+        .service-image svg {
+            width: 80%;
+            height: 80%;
+            fill: var(--forest);
+        }
+
+        /* Footer Marquee */
+        .footer {
+            padding: 4rem 0;
+            overflow: hidden;
+            border-top: 1px solid rgba(245, 245, 240, 0.2);
+        }
+
+        .marquee-wrapper {
+            display: flex;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .marquee {
+            display: flex;
+            animation: marquee 30s linear infinite;
+        }
+
+        .marquee-text {
+            font-family: 'Cooper Black', serif;
+            font-size: clamp(4rem, 12vw, 10rem);
+            text-transform: uppercase;
+            white-space: nowrap;
+            padding-right: 4rem;
+            color: var(--cream);
+            -webkit-text-stroke: 1px var(--cream);
+        }
+
+        .marquee-text.outline {
+            color: transparent;
+            -webkit-text-stroke: 2px var(--cream);
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 3rem 4rem 1rem;
+            font-size: 0.75rem;
+            color: var(--cream-dim);
+            letter-spacing: 0.1em;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding: 2rem;
+            }
+
+            .hero-right {
+                min-height: 400px;
+            }
+
+            .error-popup {
+                right: -20px;
+                top: -20px;
+                width: 280px;
+            }
+
+            .services {
+                padding: 4rem 2rem;
+            }
+
+            .footer-info {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .collage-container {
+                width: 250px;
+                height: 350px;
+            }
+
+            .error-popup {
+                position: relative;
+                top: 20px;
+                right: auto;
+                margin-top: 2rem;
+            }
+        }
+
+        /* Scanlines effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 1px,
+                rgba(0, 0, 0, 0.03) 1px,
+                rgba(0, 0, 0, 0.03) 2px
+            );
+        }
+    </style>
+</head>
+<body>
+    <!-- Noise Overlay -->
+    <div class="noise-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Three.js Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-left">
+                <h1 class="kinetic-headline" id="headline">
+                    <span class="word">WE'RE</span>
+                    <span class="word">A</span>
+                    <span class="word">CREATIVE</span>
+                    <span class="word">STUDIO</span>
+                    <span class="word">BUILT</span>
+                    <span class="word">ON</span>
+                    <span class="word">STORIES</span>
+                    <span class="word">NOT</span>
+                    <span class="word">STATISTICS.</span>
+                </h1>
+                <p class="hero-subtitle">Est. 2024 — San Francisco, CA</p>
+            </div>
+            <div class="hero-right">
+                <div class="collage-container">
+                    <div class="vintage-portrait">
+                        <div class="portrait-inner">
+                            <div class="portrait-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </div>
+                            <div class="portrait-text">CRAFT<br>YOUR<br>VISION</div>
+                        </div>
+                    </div>
+                    <!-- Windows 95 Error Popup -->
+                    <div class="error-popup" id="errorPopup">
+                        <div class="error-titlebar">
+                            <span>⚠️ System Error</span>
+                            <div class="error-titlebar-buttons">
+                                <div class="titlebar-btn">_</div>
+                                <div class="titlebar-btn">□</div>
+                                <div class="titlebar-btn">×</div>
+                            </div>
+                        </div>
+                        <div class="error-content">
+                            <div class="error-icon">
+                                <svg viewBox="0 0 24 24" fill="#FFD700">
+                                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                                </svg>
+                            </div>
+                            <div class="error-message">
+                                <strong>ERROR 404:</strong><br>
+                                Unable to get my shit together.<br><br>
+                                Press OK to pretend everything is fine.
+                            </div>
+                        </div>
+                        <div class="error-buttons">
+                            <button class="win95-btn">OK</button>
+                            <button class="win95-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="services">
+            <p class="services-header">What we do</p>
+            <ul class="services-list">
+                <li class="service-item" data-service="editing">
+                    <span class="service-number">01</span>
+                    <span class="service-name">Editing</span>
+                </li>
+                <li class="service-item" data-service="shooting">
+                    <span class="service-number">02</span>
+                    <span class="service-name">Shooting</span>
+                </li>
+                <li class="service-item" data-service="planning">
+                    <span class="service-number">03</span>
+                    <span class="service-name">Planning</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Service Floating Images -->
+        <div class="service-image" id="editingImage">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </div>
+        <div class="service-image" id="shootingImage">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.5 16.5v-9l7 4.5-7 4.5z"/></svg>
+        </div>
+        <div class="service-image" id="planningImage">
+            <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="marquee-wrapper">
+                <div class="marquee">
+                    <span class="marquee-text">LET'S CREATE SOMETHING EXTRAORDINARY.</span>
+                    <span class="marquee-text outline">LET'S CREATE SOMETHING EXTRAORDINARY.</span>
+                    <span class="marquee-text">LET'S CREATE SOMETHING EXTRAORDINARY.</span>
+                    <span class="marquee-text outline">LET'S CREATE SOMETHING EXTRAORDINARY.</span>
+                </div>
+            </div>
+            <div class="footer-info">
+                <span>© 2024 CRAFTX CREATIVE STUDIO</span>
+                <span>ALL RIGHTS RESERVED</span>
+                <span>MADE WITH CHAOS & COFFEE</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+
+    <script>
+        // ============================================
+        // THREE.JS WIREFRAME CUBES BACKGROUND
+        // ============================================
+        const canvasContainer = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        canvasContainer.appendChild(renderer.domElement);
+
+        // Instanced Mesh for wireframe cubes
+        const cubeCount = 800;
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const edges = new THREE.EdgesGeometry(cubeGeometry);
+        
+        // Create line segments for wireframe effect
+        const lineMaterial = new THREE.LineBasicMaterial({ 
+            color: 0xF5F5F0, 
+            transparent: true, 
+            opacity: 0.15 
+        });
+
+        // Store cube data
+        const cubes = [];
+        const cubeGroup = new THREE.Group();
+
+        for (let i = 0; i < cubeCount; i++) {
+            const line = new THREE.LineSegments(edges, lineMaterial.clone());
+            
+            // Random position in 3D space
+            line.position.x = (Math.random() - 0.5) * 60;
+            line.position.y = (Math.random() - 0.5) * 40;
+            line.position.z = (Math.random() - 0.5) * 30 - 10;
+            
+            // Random scale
+            const scale = Math.random() * 1.5 + 0.5;
+            line.scale.set(scale, scale, scale);
+            
+            // Random initial rotation
+            line.rotation.x = Math.random() * Math.PI;
+            line.rotation.y = Math.random() * Math.PI;
+            
+            // Store original position for interaction
+            line.userData = {
+                originalPosition: line.position.clone(),
+                rotationSpeed: {
+                    x: (Math.random() - 0.5) * 0.002,
+                    y: (Math.random() - 0.5) * 0.002
+                },
+                phase: Math.random() * Math.PI * 2
+            };
+            
+            cubes.push(line);
+            cubeGroup.add(line);
+        }
+
+        scene.add(cubeGroup);
+        camera.position.z = 15;
+
+        // Mouse tracking for interaction
+        const mouse = { x: 0, y: 0, worldX: 0, worldY: 0 };
+        
+        document.addEventListener('mousemove', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            mouse.worldX = mouse.x * 30;
+            mouse.worldY = mouse.y * 20;
+        });
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            cubes.forEach((cube, i) => {
+                // Base rotation
+                cube.rotation.x += cube.userData.rotationSpeed.x;
+                cube.rotation.y += cube.userData.rotationSpeed.y;
+                
+                // Gentle floating motion
+                cube.position.y = cube.userData.originalPosition.y + 
+                    Math.sin(time + cube.userData.phase) * 0.3;
+                
+                // Mouse interaction - disperse cubes
+                const dx = cube.position.x - mouse.worldX;
+                const dy = cube.position.y - mouse.worldY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = 8;
+                
+                if (dist < maxDist) {
+                    const force = (maxDist - dist) / maxDist;
+                    const angle = Math.atan2(dy, dx);
+                    cube.position.x += Math.cos(angle) * force * 0.3;
+                    cube.position.y += Math.sin(angle) * force * 0.3;
+                } else {
+                    // Return to original position
+                    cube.position.x += (cube.userData.originalPosition.x - cube.position.x) * 0.02;
+                }
+            });
+
+            // Subtle camera movement
+            camera.position.x = mouse.x * 2;
+            camera.position.y = mouse.y * 1;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============================================
+        // GSAP DRAGGABLE ERROR POPUP
+        // ============================================
+        gsap.registerPlugin(Draggable);
+
+        const errorPopup = document.getElementById('errorPopup');
+        
+        Draggable.create(errorPopup, {
+            type: 'x,y',
+            edgeResistance: 0.65,
+            bounds: document.body,
+            inertia: true,
+            throwProps: true,
+            onDragStart: function() {
+                gsap.to(errorPopup, {
+                    scale: 1.05,
+                    boxShadow: '8px 8px 0 rgba(0, 0, 0, 0.4)',
+                    duration: 0.2
+                });
+            },
+            onDragEnd: function() {
+                gsap.to(errorPopup, {
+                    scale: 1,
+                    boxShadow: '4px 4px 0 rgba(0, 0, 0, 0.3)',
+                    duration: 0.3,
+                    ease: 'elastic.out(1, 0.5)'
+                });
+            }
+        });
+
+        // ============================================
+        // KINETIC TYPOGRAPHY - SCROLL SKEW
+        // ============================================
+        const headline = document.getElementById('headline');
+        const words = headline.querySelectorAll('.word');
+        let lastScrollY = window.scrollY;
+        let scrollVelocity = 0;
+        let targetSkew = 0;
+        let currentSkew = 0;
+
+        window.addEventListener('scroll', () => {
+            scrollVelocity = window.scrollY - lastScrollY;
+            lastScrollY = window.scrollY;
+            targetSkew = Math.max(-15, Math.min(15, scrollVelocity * 0.5));
+        });
+
+        function updateTypography() {
+            currentSkew += (targetSkew - currentSkew) * 0.1;
+            targetSkew *= 0.95; // Decay
+            
+            words.forEach((word, i) => {
+                const delay = i * 0.05;
+                const skew = currentSkew * Math.cos(delay * Math.PI);
+                const translateY = Math.sin(Date.now() * 0.001 + i * 0.5) * 2;
+                word.style.transform = `skewX(${skew}deg) translateY(${translateY}px)`;
+            });
+            
+            requestAnimationFrame(updateTypography);
+        }
+        updateTypography();
+
+        // ============================================
+        // SERVICE HOVER IMAGES
+        // ============================================
+        const serviceItems = document.querySelectorAll('.service-item');
+        const serviceImages = {
+            editing: document.getElementById('editingImage'),
+            shooting: document.getElementById('shootingImage'),
+            planning: document.getElementById('planningImage')
+        };
+
+        let currentImage = null;
+
+        serviceItems.forEach(item => {
+            item.addEventListener('mouseenter', (e) => {
+                const service = item.dataset.service;
+                currentImage = serviceImages[service];
+                currentImage.classList.add('active');
+            });
+
+            item.addEventListener('mousemove', (e) => {
+                if (currentImage) {
+                    gsap.to(currentImage, {
+                        x: e.clientX + 20,
+                        y: e.clientY - 140,
+                        rotation: (e.clientX - window.innerWidth / 2) * 0.02,
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                }
+            });
+
+            item.addEventListener('mouseleave', () => {
+                if (currentImage) {
+                    currentImage.classList.remove('active');
+                    currentImage = null;
+                }
+            });
+        });
+
+        // ============================================
+        // SMOOTH SCROLL (Lenis-style)
+        // ============================================
+        let scrollY = 0;
+        let targetScrollY = 0;
+
+        document.addEventListener('wheel', (e) => {
+            targetScrollY += e.deltaY;
+            targetScrollY = Math.max(0, Math.min(targetScrollY, document.body.scrollHeight - window.innerHeight));
+        }, { passive: true });
+
+        function smoothScroll() {
+            scrollY += (targetScrollY - scrollY) * 0.1;
+            window.scrollTo(0, scrollY);
+            requestAnimationFrame(smoothScroll);
+        }
+        // Uncomment for smooth scroll: smoothScroll();
+
+        // ============================================
+        // ENTRANCE ANIMATIONS
+        // ============================================
+        gsap.from('.kinetic-headline .word', {
+            y: 100,
+            opacity: 0,
+            rotationX: -90,
+            stagger: 0.05,
+            duration: 1,
+            ease: 'power4.out',
+            delay: 0.3
+        });
+
+        gsap.from('.hero-subtitle', {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            delay: 1
+        });
+
+        gsap.from('.vintage-portrait', {
+            scale: 0.8,
+            opacity: 0,
+            rotation: -10,
+            duration: 1,
+            ease: 'elastic.out(1, 0.5)',
+            delay: 0.5
+        });
+
+        gsap.from('.error-popup', {
+            scale: 0,
+            rotation: 20,
+            duration: 0.6,
+            ease: 'back.out(1.7)',
+            delay: 1.2
+        });
+
+        gsap.from('.service-item', {
+            x: -100,
+            opacity: 0,
+            stagger: 0.15,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: '.services',
+                start: 'top 80%'
+            }
+        });
+    </script>
+</body>
+</html>
