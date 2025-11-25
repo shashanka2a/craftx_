@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Cooper Black';
+  src: url('https://db.onlinewebfonts.com/t/3f3cf99c148c8bd54e96b09b8f1d5f0e.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-forest text-cream overflow-x-hidden;
+    font-family: var(--font-space-mono);
+    cursor: crosshair;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(26, 74, 26, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(196, 160, 0, 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  /* Enhanced cursor for interactive elements */
+  button, a, .service-item, .error-popup {
+    cursor: pointer;
+  }
+
+  button:active, .error-popup:active {
+    cursor: grabbing;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+}
+
+@layer utilities {
+  .noise-overlay::before {
+    content: '';
+    @apply absolute -top-1/2 -left-1/2 w-[200%] h-[200%];
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    animation: grain 0.5s steps(10) infinite;
+  }
+
+  .vintage-portrait::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-full;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(245, 245, 240, 0.03) 2px,
+      rgba(245, 245, 240, 0.03) 4px
+    );
+  }
+
+  .text-glow {
+    text-shadow: 
+      0 0 10px rgba(196, 160, 0, 0.5),
+      0 0 20px rgba(196, 160, 0, 0.3),
+      0 0 30px rgba(196, 160, 0, 0.2);
+  }
+
+  .text-glow-subtle {
+    text-shadow: 0 0 20px rgba(245, 245, 240, 0.2);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #F5F5F0 0%, #C4A000 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .service-item {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, transparent, rgba(196, 160, 0, 0.1), transparent);
+    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .service-item:hover::before {
+    width: 100%;
+  }
+}
+
